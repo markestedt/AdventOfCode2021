@@ -113,9 +113,7 @@ namespace Day11
                     Flash(allOctos, point, maxRow, maxCol, hasFlashed);
                 }
             }
-
         }
-
 
         private static HashSet<(int, int)> GetAdjacentPoints((int, int) sourcePoint, int maxRow, int maxCol)
         {
