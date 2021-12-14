@@ -38,7 +38,7 @@ namespace Day12
             var paths2 = BuildPaths(map, new List<string> { "start" }, false);
         }
 
-        private static List<List<string>> BuildPaths(Dictionary<string, List<string>> map, List<string> currentPath, bool isPart1)
+        private static IEnumerable<List<string>> BuildPaths(IReadOnlyDictionary<string, List<string>> map, List<string> currentPath, bool isPart1)
         {
             var lastStep = currentPath.Last();
             if (lastStep == "end")
@@ -46,7 +46,7 @@ namespace Day12
                 return new List<List<string>> { currentPath };
             }
 
-            var possibleSteps = map[lastStep].Where(x => currentPath.IsValidStepPart(x, isPart1));
+            var possibleSteps = map[lastStep].Where(x => currentPath.IsValidStep(x, isPart1)).ToList();
 
             if (!possibleSteps.Any())
             {
@@ -56,7 +56,6 @@ namespace Day12
 
             // First add each possible step to current path
             // Then build paths upon those.
-
             return possibleSteps
                 .Select(step => new List<List<string>> { currentPath, new List<string> { step } }.SelectMany(x => x).ToList())
                 .SelectMany(x => BuildPaths(map, x, isPart1)).ToList();
@@ -66,9 +65,9 @@ namespace Day12
 
     public static class Extensions
     {
-        public static bool IsValidStepPart(this IEnumerable<string> path, string step, bool isPart1)
+        public static bool IsValidStep(this IEnumerable<string> path, string step, bool isPart1)
         {
-            if (step.All(c => char.IsUpper(c)))
+            if (step.All(char.IsUpper))
             {
                 return true;
             }
@@ -77,20 +76,19 @@ namespace Day12
             {
                 return !path.Contains(step);
             }
-            else
-            {
-                if (step == "start")
-                {
-                    return false;
-                }
 
-                return !path.Contains(step) || path.Where(IsLower).Count() == path.Where(IsLower).Distinct().Count();
+            if (step == "start")
+            {
+                return false;
             }
+
+            return !path.Contains(step) || path.Where(IsLower).Count() == path.Where(IsLower).Distinct().Count();
         }
+
 
         public static bool IsLower(this string val)
         {
-            return val.All(c => char.IsLower(c));
+            return val.All(char.IsLower);
         }
     }
 }

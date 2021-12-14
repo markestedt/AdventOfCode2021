@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -9,33 +10,51 @@ namespace Day7
         static void Main(string[] args)
         {
             var input = File.ReadAllLines("input.txt")[0].Split(',').Select(int.Parse).ToArray();
-            var median = GetMedian(input);
-            var mode = GetMode(input);
+            
+            Part1(input);
+            Part2(input);
 
-            var min = input.Min();
-            var max = input.Max();
-
-            long Part1() => Enumerable.Range(min, max - min + 1).Min(i => input.Select(x => Math.Abs(x - i)).Sum());
-            long Part2() => Enumerable.Range(min, max - min + 1).Min(i => input.Select(x => Math.Abs(x - i)).Select(x => x * (x + 1) / 2).Sum());
-
-            Console.WriteLine($"Part1: {Part1()}");
-            Console.WriteLine($"Part2: {Part2()}");
             Console.ReadLine();
         }
 
-        public static int GetMode(int[] input)
+        public static void Part2(int[] crabs)
         {
-            return input.GroupBy(x => x).OrderByDescending(x => x.Count()).ThenBy(x => x.Key).Select(x => x.Key).First();
+            int? fuelConsumedPart2 = null;
+            var max = crabs.Max();
+            
+            for (var i = 0; i <= max; i++)
+            {
+                var positionCost = crabs.SelectMany(crab => Enumerable.Range(1, Math.Abs(crab - i))).Sum();
+
+                if (!fuelConsumedPart2.HasValue || positionCost < fuelConsumedPart2)
+                {
+                    fuelConsumedPart2 = positionCost;
+                }
+                else if (positionCost > fuelConsumedPart2)
+                {
+                    break;
+                }
+            }
+
+            Console.WriteLine($"Part2: {fuelConsumedPart2}");
         }
 
-        public static decimal GetMedian(int[] array)
+        public static void Part1(int[] crabs)
         {
+            var median = GetMedian(crabs);
+            var fuelConsumedPart1 = crabs.Sum(crab => Math.Abs(crab - median));
+
+            Console.WriteLine($"Part1: {fuelConsumedPart1}");
+        }
+
+        public static int GetMedian(int[] array)
+        {
+            int medianValue;
+
             int[] tempArray = array;
             int count = tempArray.Length;
 
             Array.Sort(tempArray);
-
-            decimal medianValue = 0;
 
             if (count % 2 == 0)
             {

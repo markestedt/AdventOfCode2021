@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Day8
 {
@@ -12,13 +11,19 @@ namespace Day8
         {
             var input = File.ReadAllLines("input.txt");
 
-            var lengths = new[] { 2, 3, 4, 7 };
+            var uniqueLengths = new[] { 2, 3, 4, 7 };
 
-            var part1 = input.Select(x => x.Split(new char[] { '|', ' ' }, StringSplitOptions.RemoveEmptyEntries)[10..].Count(x => lengths.Contains(x.Length))).Sum();
-            var part2 = SolvePartTwo(input);
+            var part1 = input.Select(x =>
+                x.Split(new[] {'|', ' '}, StringSplitOptions.RemoveEmptyEntries)[10..]
+                    .Count(x => uniqueLengths.Contains(x.Length))).Sum();
+            Console.WriteLine($"Part 1: {part1}");
+            
+            Part2(input);
+
+            Console.ReadLine();
         }
 
-        private static long SolvePartTwo(IEnumerable<string> entries)
+        private static void Part2(IEnumerable<string> entries)
         {
             long sum = 0;
 
@@ -30,20 +35,19 @@ namespace Day8
                 var wires = tmp[..10].Select(x => x.OrderBy(c => c).ToList()).ToList();
                 var outputs = tmp[10..].Select(x => x.OrderBy(c => c).ToList());
 
-                //
-                /*
-                 * Lit section counts
-                 * 0:6
-                 * 1:2
-                 * 2:5
-                 * 3:5
-                 * 4:4
-                 * 5:5
-                 * 6:6
-                 * 7:3
-                 * 8:7
-                 * 9:6
-                */
+
+                 //* Section counts
+                 //* 0:6
+                 //* 1:2
+                 //* 2:5
+                 //* 3:5
+                 //* 4:4
+                 //* 5:5
+                 //* 6:6
+                 //* 7:3
+                 //* 8:7
+                 //* 9:6
+                
 
                 //Uniques
                 mapping[1] = wires.Single(x => x.Count == 2);
@@ -52,7 +56,7 @@ namespace Day8
                 mapping[8] = wires.Single(x => x.Count == 7);
 
                 mapping[9] = wires.Single(x => x.Count == 6 && x.Intersect(mapping[4]).Count() == 4);
-                mapping[6] = wires.Single(x => x.Count == 6 && !mapping[1].All(a => x.Contains(a)));
+                mapping[6] = wires.Single(x => x.Count == 6 && !mapping[1].All(x.Contains));
                 mapping[0] = wires.Single(x => x.Count == 6 && !mapping.ContainsValue(x));
 
                 mapping[5] = wires.Single(x => x.Count == 5 && x.Intersect(mapping[6]).Count() == 5);
@@ -70,7 +74,7 @@ namespace Day8
                 sum += long.Parse(ans);
             }
 
-            return sum;
+            Console.WriteLine($"Part 2: {sum}");
         }
     }
 }
