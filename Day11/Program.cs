@@ -27,6 +27,7 @@ namespace Day11
             }
 
             var maxRow = rowCount - 1;
+            
             Part1(octopuses, maxRow, maxCol);
             Part2(octopuses, maxRow, maxCol);
 
@@ -131,7 +132,6 @@ namespace Day11
 
             adjacent.RemoveWhere(x => x.Item1 < 0 || x.Item2 < 0 || x.Item1 > maxRow || x.Item2 > maxCol);
             return adjacent;
-
         }
     }
 
