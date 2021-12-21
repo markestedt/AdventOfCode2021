@@ -15,44 +15,44 @@ namespace Day16
             var binaryString = input.Aggregate(string.Empty,
                 (current, c) => current + Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0'));
 
+            var (part1, _, part2) = ReadPackage(binaryString, 0);
 
-            var test = ReadPackage(binaryString, 0);
-
-
+            Console.WriteLine($"Part 1: {part1}");
+            Console.WriteLine($"Part 2: {part2}");
         }
 
         private static (long, int, long) ProcessLiteralValues(string package, long versionSum)
         {
             var packageContent = package[6..];
-            var groupNumber = 0;
+            var index = 0;
 
             var keepProcessing = true;
             var actualValue = new StringBuilder();
 
             while (keepProcessing)
             {
-                keepProcessing = packageContent[groupNumber] == '1';
-                actualValue.Append(packageContent[(groupNumber + 1)..(groupNumber + 5)]);
-                groupNumber += 5;
+                keepProcessing = packageContent[index] == '1';
+                actualValue.Append(packageContent[(index + 1)..(index + 5)]);
+                index += 5;
             }
 
-            return (Convert.ToInt64(actualValue.ToString(), 2), groupNumber + 6, versionSum);
+            return (versionSum, index + 6,  Convert.ToInt64(actualValue.ToString(), 2));
         }
 
-        private static (long, int, long) ReadPackage(string package, long versionSum)
+        private static (long, int, long) ReadPackage(string packet, long versionSum)
         {
-            var version = Convert.ToInt64(package[..3], 2);
-            var typeId = Convert.ToInt64(package.Substring(3, 3), 2);
+            var version = Convert.ToInt64(packet[..3], 2);
+            var typeId = Convert.ToInt64(packet.Substring(3, 3), 2);
 
             versionSum += version;
 
             if (typeId == 4)
             {
-                return ProcessLiteralValues(package, versionSum);
+                return ProcessLiteralValues(packet, versionSum);
             }
 
             var values = new List<long>();
-            var lengthTypeId = Convert.ToInt32(package[6].ToString(), 2);
+            var lengthTypeId = Convert.ToInt32(packet[6].ToString(), 2);
 
             var bitSize = lengthTypeId == 0 ? 15 : 11;
             var processedBitsCount = 0;
@@ -61,12 +61,12 @@ namespace Day16
 
             if (lengthTypeId == 0)
             {
-                var bitsToProcess = Convert.ToInt32(package.Substring(packageContentStartIndex, bitSize), 2);
+                var bitsToProcess = Convert.ToInt32(packet.Substring(packageContentStartIndex, bitSize), 2);
 
                 while (bitsToProcess != processedBitsCount)
                 {
-                    var (value, bitsUsed, subVersionSum) = ReadPackage(
-                        package.Substring(packageContentStartIndex + bitSize + processedBitsCount, bitsToProcess - processedBitsCount),
+                    var (subVersionSum, bitsUsed, value) = ReadPackage(
+                        packet.Substring(packageContentStartIndex + bitSize + processedBitsCount, bitsToProcess - processedBitsCount),
                         versionSum);
 
                     processedBitsCount += bitsUsed;
@@ -76,18 +76,18 @@ namespace Day16
             }
             else
             {
-                var numberOfSubpackets = Convert.ToInt32(package.Substring(packageContentStartIndex, bitSize), 2);
+                var numberOfSubpackets = Convert.ToInt32(packet.Substring(packageContentStartIndex, bitSize), 2);
 
                 for (var i = 0; i < numberOfSubpackets; i++)
                 {
-                    var (value, bitsUsed, subVersionSum) = ReadPackage(package[(packageContentStartIndex + bitSize + processedBitsCount)..], versionSum);
+                    var (subVersionSum, bitsUsed, value) = ReadPackage(packet[(packageContentStartIndex + bitSize + processedBitsCount)..], versionSum);
 
                     processedBitsCount += bitsUsed;
                     values.Add(value);
                     versionSum = subVersionSum;
                 }
             }
-            var totalBitsUsed = processedBitsCount + bitSize + 7;
+            var totalBitsUsed = processedBitsCount + bitSize + packageContentStartIndex;
 
             Func<List<long>, long> resultFunc = typeId switch
             {
@@ -101,7 +101,7 @@ namespace Day16
                 _ => throw new Exception()
             };
 
-            return (resultFunc(values), totalBitsUsed, versionSum);
+            return (versionSum, totalBitsUsed, resultFunc(values));
         }
     }
 }
